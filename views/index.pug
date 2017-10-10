@@ -3,6 +3,11 @@ html
     title= title
     link(type='text/css', rel='stylesheet', href='./style.css')
   body
+    script
+      include FB_SDK.js
     h1= message
+    div(id='fb-root')
+    script
+      include logonToFbApp.js
     div(id='app')
     script(src='./bundle.js')
