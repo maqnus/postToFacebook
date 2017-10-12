@@ -2,7 +2,7 @@
   "name": "test02",
   "version": "1.0.0",
   "description": "",
-  "main": "webpack.config.js",
+  "main": "./server/index.js",
   "dependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
