@@ -1,0 +1,2 @@
+pug views --out ./public/ &&
+webpack --config webpack.config.prod.js
