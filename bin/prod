@@ -1,2 +1,3 @@
-pug views --out ./public/ &&
+rm -fr ./public &&
+pug -O "{doctype: 'html'}" views --out ./public/ &&
 webpack --config webpack.config.prod.js
