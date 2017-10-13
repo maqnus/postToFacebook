@@ -3,7 +3,7 @@ var app = express();
 
 app.set('port', (process.env.PORT || 5050));
 app.use(express.static('public'));
-
+app.set('views', __dirname + '/views'); 
 app.set('view engine', 'pug');
 
 app.get('/', function(req, res) {
