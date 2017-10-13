@@ -6,13 +6,75 @@ export default class App extends Component {
     constructor(props) {
         super(props)
         this.state = {
+            devmode: false,
+            user_logged_in: false,
             user_id: '',
             user_access_token: '',
+            user_name: '',
             pages: null,
-            selected_page_id: '',
+            selected_page_id: null,
             page_access_token: '',
-            message: 'hello fans'
+            message: ''
         }
+    }
+
+    componentDidMount() {
+        setTimeout(() => { 
+            const authResponse = this.userAuth();
+            if(authResponse) {
+                console.log('user is logged in');
+                this.setState({
+                    user_id: authResponse.userID,
+                    user_access_token: authResponse.accessToken,
+                    user_logged_in: true
+                });
+            } else {
+                console.log('user is not logged in');
+            }
+        }, 1000);
+        
+        
+    }
+
+    userAuth() {
+        return FB.getLoginStatus(response => {
+            console.log('waiting for user id...');
+            if (response.status === 'connected') {
+                console.log('got user id', response, response.authResponse.userID);
+                return response.authResponse.userID;
+            } else {
+                console.log('failed to get user access token', response);
+                return false;
+            }
+        })
+    } 
+
+    logIn() {
+        new Promise((resolve, reject) => {
+            FB.login(function(response) {
+                if (response.authResponse) {
+                 console.log('Welcome!  Fetching your information.... ');
+                 FB.api('/me', function(response) {
+                   console.log('Good to see you, ' + response.name + '.');
+                   resolve(response);
+                 });
+                } else {
+                 console.log('User cancelled login or did not fully authorize.');
+                 reject(response);
+                }
+            });
+        }).then(response => this.main(response));
+    }
+
+    logOut() {
+        FB.logout(function(response) {
+            console.log('Goodbye.');
+        });
+        this.setState({
+            user_id: '',
+            user_access_token: '',
+            user_logged_in: false
+        });
     }
 
     getUserId() {
@@ -28,7 +90,7 @@ export default class App extends Component {
                     reject(response)
                 }
             })
-        });
+        }).then(id => this.setState({user_id: id}))
     }
 
     getUserAccessToken() {
@@ -44,15 +106,14 @@ export default class App extends Component {
                     reject(response)
                 }
             })
-        });
+        }).then(response => this.setState({user_access_token: response}));
     }
-    
 
-    getPagesWhereUserIsAdmin(props) {
+    getPagesWhereUserIsAdmin() {
         const {
             user_id,
             user_access_token
-        } = props;
+        } = this.state;
 
         return new Promise((resolve, reject) => {
             return FB.api('/me/accounts', {
@@ -66,16 +127,22 @@ export default class App extends Component {
                     resolve(response.data)
                 }
             })
+        }).then(pages => {
+            this.setState({
+                "pages": pages,
+                "selected_page_id": pages[0].id
+            });
+            this.getPageAccessToken();
         });
     }
 
-    getPageAccessToken(props) {
+    getPageAccessToken() {
         const {
             selected_page_id,
             user_access_token
-        } = props;
+        } = this.state;
 
-        return new Promise((resolve, reject) => {
+        new Promise((resolve, reject) => {
             return FB.api( `v2.4/${selected_page_id}`, 'GET', {
                     "fields":"access_token"
                 }, (response) => {
@@ -89,6 +156,8 @@ export default class App extends Component {
                     }
                 }
               );
+        }).then(token => {
+            this.setState({"page_access_token": token});
         });
     }
 
@@ -122,71 +191,113 @@ export default class App extends Component {
             return <option key={opt.id} value={opt.id}>{opt.name}</option>
         });
         return (
-            <select id="pageIdSelect" onChange={ e => this.setState({"selected_page_id": e.target.selectedOptions[0].value}) }>
+            <select id="pageIdSelect" onChange={ e => {
+                this.setState({"selected_page_id": e.target.selectedOptions[0].value});
+                this.getPageAccessToken();
+                }}>
                 { options }
             </select>
         )
     }
 
+    main(loginResponse) {
+        this.setState({
+            user_id: loginResponse.id,
+            user_name: loginResponse.name,
+            user_logged_in: true
+        });
+        this.getUserId();
+        this.getUserAccessToken();
+        this.getPagesWhereUserIsAdmin();
+        this.getPageAccessToken();
+    }
+
     render() {
         return(
-            <div>
+            <div className="container">
                 <h1>Post to facebook</h1>
-                <div className="fb-login-button" data-max-rows="1" data-size="large" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="false"></div>
-                
-                <form onSubmit={(event) => event.preventDefault()}>
-                    <ul>
-                        <li>
-                            <label htmlFor="userIdInput">User ID</label>
-                            {
-                                (this.state.user_id) && (
-                                    <input type="text" id="userIdInput" value={this.state.user_id} onChange={(e) => this.setState({user_access_token: e.target.value})} />
-                                )
-                            }
-                            <button onClick={() => this.getUserId().then(id => this.setState({"user_id": id}))}>getUserId</button>
-                        </li>
-                        <li>
-                            <label htmlFor="userAccessTokenInput">User Access Token</label>
-                            {
-                                (this.state.user_access_token) && (
-                                    <input type="text" id="userAccessTokenInput" value={this.state.user_access_token} onChange={(e) => this.setState({user_access_token: e.target.value})} />
-                                )
-                            }
-                            <button onClick={() => this.getUserAccessToken().then(userToken => this.setState({"user_access_token": userToken}))}>getUserAccessToken</button>
-                        </li>
-                        <li>
-                            <button onClick={() => this.getPagesWhereUserIsAdmin(this.state).then(pages => this.setState({"pages": pages}))}>getPagesWhereUserIsAdmin</button>
-                        </li>
-                        {
-                            (this.state.pages) && (
+                {
+                    (this.state.user_logged_in) && (
+                        <p>Lets create a post {this.state.user_name}</p>
+                    )
+                }
+                <div className="btn-group">
+                    <button onClick={() => this.setState({devmode: !this.state.devmode})} className="btn btn-secondary">Toggle devmode</button>
+                    {
+                        (this.state.user_logged_in) && (
+                            <button onClick={() => this.logOut()} type="button" className="btn btn-light">Logout of facebook</button>
+                        )
+                    }
+                    {
+                        (!this.state.user_logged_in) && (
+                            <button onClick={() => this.logIn()} type="button" className="btn btn-primary">Login to facebook</button>
+                        )
+                    }
+                </div>
+                {
+                    (this.state.user_logged_in) && (
+                        <form onSubmit={(event) => event.preventDefault()} className="form-group">
+                            <p>Start by selecting which page you want to post to</p>
+                            <ul>
+                                {
+                                    (this.state.devmode) && (
+                                        <li>
+                                            <label htmlFor="userIdInput">User ID</label>
+                                            <input type="text" id="userIdInput" value={this.state.user_id} onChange={(e) => this.setState({user_access_token: e.target.value})} />
+                                        </li>
+                                    )
+                                }
+                                {
+                                    (this.state.devmode) && (
+                                        <li>
+                                            <label htmlFor="userAccessTokenInput">User Access Token</label>
+                                            <input type="text" id="userAccessTokenInput" value={this.state.user_access_token} onChange={(e) => this.setState({user_access_token: e.target.value})} />
+                                        </li>
+                                    )
+                                }
+                                {
+                                    (this.state.pages) && (
+                                        <li>
+                                            <label htmlFor="pageIdSelect">Your pages:</label>
+                                            {
+                                                (this.state.selected_page_id && this.state.devmode) && (
+                                                    <input type="text" id="pageIdInput" value={this.state.selected_page_id} onChange={(e) => this.setState({"selected_page_id": e.target.value})} />
+                                                )
+                                            }
+                                            { this.renderSelectGroupId() }
+                                        </li>
+                                    )
+                                }
+                                {
+                                    (this.state.devmode) && (
+                                        <li>
+                                            <label htmlFor="pageAccessTokenInput">Page Access Token</label>
+                                            <input type="text" id="pageAccessTokenInput" value={this.state.page_access_token} onChange={(e) => this.setState({page_access_token: e.target.value})} />
+                                            <button onClick={() => this.getPageAccessToken()}>getPageAccessToken</button>
+                                        </li>
+                                    )
+                                }
                                 <li>
-                                    <label htmlFor="pageIdSelect">Pages where user is admin</label>
                                     {
-                                        (this.state.selected_page_id) && (
-                                            <input type="text" id="pageIdInput" value={this.state.selected_page_id} onChange={(e) => this.setState({"selected_page_id": e.target.value})} />
+                                        (this.state.devmore) && (
+                                            <label htmlFor="messageInput">Message</label>
                                         )
                                     }
-                                    { this.renderSelectGroupId() }
+                                    <textarea id="messageInput" defaultValue={this.state.message} onChange={(e) => this.setState({message: e.target.value})} />
                                 </li>
-                            )
-                        }
-                        <li>
-                            <label htmlFor="pageAccessTokenInput">Page Access Token</label>
-                            {
-                                (this.state.page_access_token) && (
-                                    <input type="text" id="pageAccessTokenInput" value={this.state.page_access_token} onChange={(e) => this.setState({page_access_token: e.target.value})} />
-                                )
-                            }
-                            <button onClick={() => this.getPageAccessToken(this.state).then(pageToken => this.setState({"page_access_token": pageToken}))}>getPageAccessToken</button>
-                        </li>
-                        <li>
-                            <label htmlFor="messageInput">Message</label>
-                            <textarea id="messageInput" defaultValue={this.state.message} onChange={(e) => this.setState({message: e.target.value})} />
-                            <button onClick={() => this.postToPage(this.state)}>postToPage</button>
-                        </li>
-                    </ul>
-                </form>
-                <div>{JSON.stringify(this.state, null, 2)}</div>
+                            </ul>
+                            <button onClick={() => this.postToPage(this.state)} type="button" className="btn btn-success">Post</button>
+                        </form>
+                    )
+                }
+                
+                {
+                    (this.state.devmode) && (
+                        <div>
+                            <code>{JSON.stringify(this.state, null, 2)}</code>
+                        </div>
+                    )
+                }
             </div>
         )
     }
