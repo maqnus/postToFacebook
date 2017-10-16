@@ -1,8 +1,3 @@
-# AuthType Basic
-# AuthName "Please enter your ID and password"
-# AuthUserFile /customers/8/4/e/kjelland.com/httpd.www/magnusandfatima/.htpasswd
-# AuthGroupFile /static/
-# Require valid-user
 DirectoryIndex /public/index.html
 order deny,allow
 
