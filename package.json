@@ -31,6 +31,6 @@
     "dev": "./bin/dev",
     "prod": "./bin/prod"
   },
-  "author": "",
+  "author": "webmagster <magnus@kjelland.com>",
   "license": "ISC"
 }
