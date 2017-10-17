@@ -9988,7 +9988,7 @@ var App = function (_Component) {
                         _react2.default.createElement(
                             'li',
                             null,
-                            this.state.devmore && _react2.default.createElement(
+                            this.state.devmode && _react2.default.createElement(
                                 'label',
                                 { htmlFor: 'messageInput' },
                                 'Message'

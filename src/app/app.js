@@ -216,9 +216,7 @@ export default class App extends Component {
         return(
             <div className="container">
                 <h1>Post to facebook</h1>
-                {(this.state.user_logged_in) && (
-                    <p>Lets create a post {this.state.user_name}</p>
-                )}
+                {(this.state.user_logged_in) && (<p>Lets create a post {this.state.user_name}</p>)}
                 
                 <div className="btn-group">
                     <button onClick={() => this.setState({devmode: !this.state.devmode})} className="btn btn-secondary">Toggle devmode</button>
@@ -265,7 +263,7 @@ export default class App extends Component {
                                 </li>
                             )}
                             <li>
-                                {(this.state.devmore) && (
+                                {(this.state.devmode) && (
                                     <label htmlFor="messageInput">Message</label>
                                 )}
                                 <textarea id="messageInput" defaultValue={this.state.message} onChange={(e) => this.setState({message: e.target.value})} />
@@ -275,11 +273,7 @@ export default class App extends Component {
                     </form>
                 )}
                 
-                {(this.state.devmode) && (
-                    <div>
-                        <code>{JSON.stringify(this.state, null, 2)}</code>
-                    </div>
-                )}
+                {(this.state.devmode) && (<div><code>{JSON.stringify(this.state, null, 2)}</code></div>)}
             </div>
         )
     }
