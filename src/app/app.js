@@ -216,88 +216,70 @@ export default class App extends Component {
         return(
             <div className="container">
                 <h1>Post to facebook</h1>
-                {
-                    (this.state.user_logged_in) && (
-                        <p>Lets create a post {this.state.user_name}</p>
-                    )
-                }
+                {(this.state.user_logged_in) && (
+                    <p>Lets create a post {this.state.user_name}</p>
+                )}
+                
                 <div className="btn-group">
                     <button onClick={() => this.setState({devmode: !this.state.devmode})} className="btn btn-secondary">Toggle devmode</button>
-                    {
-                        (this.state.user_logged_in) && (
-                            <button onClick={() => this.logOut()} type="button" className="btn btn-light">Logout of facebook</button>
-                        )
-                    }
-                    {
-                        (!this.state.user_logged_in) && (
-                            <button onClick={() => this.logIn()} type="button" className="btn btn-primary">Login to facebook</button>
-                        )
-                    }
+                    {(this.state.user_logged_in) && (
+                        <button onClick={() => this.logOut()} type="button" className="btn btn-light">Logout of facebook</button>
+                    )}
+                    {(!this.state.user_logged_in) && (
+                        <button onClick={() => this.logIn()} type="button" className="btn btn-primary">Login to facebook</button>
+                    )}
                 </div>
-                {
-                    (this.state.user_logged_in) && (
-                        <form onSubmit={(event) => event.preventDefault()} className="form-group">
-                            <p>Start by selecting which page you want to post to</p>
-                            <ul>
-                                {
-                                    (this.state.devmode) && (
-                                        <li>
-                                            <label htmlFor="userIdInput">User ID</label>
-                                            <input type="text" id="userIdInput" value={this.state.user_id} onChange={(e) => this.setState({user_access_token: e.target.value})} />
-                                        </li>
-                                    )
-                                }
-                                {
-                                    (this.state.devmode) && (
-                                        <li>
-                                            <label htmlFor="userAccessTokenInput">User Access Token</label>
-                                            <input type="text" id="userAccessTokenInput" value={this.state.user_access_token} onChange={(e) => this.setState({user_access_token: e.target.value})} />
-                                        </li>
-                                    )
-                                }
-                                {
-                                    (this.state.pages) && (
-                                        <li>
-                                            <label htmlFor="pageIdSelect">Your pages:</label>
-                                            {
-                                                (this.state.selected_page_id && this.state.devmode) && (
-                                                    <input type="text" id="pageIdInput" value={this.state.selected_page_id} onChange={(e) => this.setState({"selected_page_id": e.target.value})} />
-                                                )
-                                            }
-                                            { this.renderSelectGroupId() }
-                                        </li>
-                                    )
-                                }
-                                {
-                                    (this.state.devmode) && (
-                                        <li>
-                                            <label htmlFor="pageAccessTokenInput">Page Access Token</label>
-                                            <input type="text" id="pageAccessTokenInput" value={this.state.page_access_token} onChange={(e) => this.setState({page_access_token: e.target.value})} />
-                                            <button onClick={() => this.getPageAccessToken()}>getPageAccessToken</button>
-                                        </li>
-                                    )
-                                }
+
+                {(this.state.user_logged_in) && (
+                    <form onSubmit={(event) => event.preventDefault()} className="form-group">
+                        <p>Start by selecting which page you want to post to</p>
+                        <ul>
+                            {(this.state.devmode) && (
                                 <li>
+                                    <label htmlFor="userIdInput">User ID</label>
+                                    <input type="text" id="userIdInput" value={this.state.user_id} onChange={(e) => this.setState({user_access_token: e.target.value})} />
+                                </li>
+                            )}
+                            {(this.state.devmode) && (
+                                <li>
+                                    <label htmlFor="userAccessTokenInput">User Access Token</label>
+                                    <input type="text" id="userAccessTokenInput" value={this.state.user_access_token} onChange={(e) => this.setState({user_access_token: e.target.value})} />
+                                </li>
+                            )}
+                            {(this.state.pages) && (
+                                <li>
+                                    <label htmlFor="pageIdSelect">Your pages:</label>
                                     {
-                                        (this.state.devmore) && (
-                                            <label htmlFor="messageInput">Message</label>
+                                        (this.state.selected_page_id && this.state.devmode) && (
+                                            <input type="text" id="pageIdInput" value={this.state.selected_page_id} onChange={(e) => this.setState({"selected_page_id": e.target.value})} />
                                         )
                                     }
-                                    <textarea id="messageInput" defaultValue={this.state.message} onChange={(e) => this.setState({message: e.target.value})} />
+                                    { this.renderSelectGroupId() }
                                 </li>
-                            </ul>
-                            <button onClick={() => this.postToPage(this.state)} type="button" className="btn btn-success">Post</button>
-                        </form>
-                    )
-                }
+                            )}
+                            {(this.state.devmode) && (
+                                <li>
+                                    <label htmlFor="pageAccessTokenInput">Page Access Token</label>
+                                    <input type="text" id="pageAccessTokenInput" value={this.state.page_access_token} onChange={(e) => this.setState({page_access_token: e.target.value})} />
+                                    <button onClick={() => this.getPageAccessToken()}>getPageAccessToken</button>
+                                </li>
+                            )}
+                            <li>
+                                {(this.state.devmore) && (
+                                    <label htmlFor="messageInput">Message</label>
+                                )}
+                                <textarea id="messageInput" defaultValue={this.state.message} onChange={(e) => this.setState({message: e.target.value})} />
+                            </li>
+                        </ul>
+                        <button onClick={() => this.postToPage(this.state)} type="button" className="btn btn-success">Post</button>
+                    </form>
+                )}
                 
-                {
-                    (this.state.devmode) && (
-                        <div>
-                            <code>{JSON.stringify(this.state, null, 2)}</code>
-                        </div>
-                    )
-                }
+                {(this.state.devmode) && (
+                    <div>
+                        <code>{JSON.stringify(this.state, null, 2)}</code>
+                    </div>
+                )}
             </div>
         )
     }
