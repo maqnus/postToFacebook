@@ -9643,7 +9643,10 @@ var App = function (_Component) {
             pages: null,
             selected_page_id: null,
             page_access_token: '',
-            message: ''
+            message: '',
+            post_link: null,
+            single_photo_url: '',
+            single_photo_caption: ''
         };
         return _this;
     }
@@ -9762,11 +9765,6 @@ var App = function (_Component) {
         value: function getPagesWhereUserIsAdmin() {
             var _this6 = this;
 
-            var _state = this.state,
-                user_id = _state.user_id,
-                user_access_token = _state.user_access_token;
-
-
             return new Promise(function (resolve, reject) {
                 return FB.api('/me/accounts', {
                     fields: 'manage_pages,name'
@@ -9792,14 +9790,9 @@ var App = function (_Component) {
         value: function getPageAccessToken() {
             var _this7 = this;
 
-            var _state2 = this.state,
-                selected_page_id = _state2.selected_page_id,
-                user_access_token = _state2.user_access_token;
-
-
-            new Promise(function (resolve, reject) {
-                return FB.api('v2.4/' + selected_page_id, 'GET', {
-                    "fields": "access_token"
+            return new Promise(function (resolve, reject) {
+                return FB.api('v2.4/' + _this7.state.selected_page_id, 'GET', {
+                    fields: 'access_token'
                 }, function (response) {
                     console.log('waiting for page access token...');
                     if (!response || response.error) {
@@ -9810,38 +9803,40 @@ var App = function (_Component) {
                         resolve(response.access_token);
                     }
                 });
-            }).then(function (token) {
-                _this7.setState({ "page_access_token": token });
             });
         }
     }, {
         key: 'postToPage',
-        value: function postToPage(props) {
-            var selected_page_id = props.selected_page_id,
-                page_access_token = props.page_access_token,
-                message = props.message;
+        value: function postToPage() {
+            var _this8 = this;
 
-
-            return new Promise(function (resolve, reject) {
-                return FB.api('v2.4/' + selected_page_id + '/feed', 'POST', {
-                    message: message,
-                    access_token: page_access_token,
-                    scope: 'publish_actions'
-                }, function (response) {
-                    if (!response || response.error) {
-                        console.log('Error occured');
-                        reject(response);
-                    } else {
-                        console.log('Post ID: ' + response.id);
-                        resolve(response);
-                    }
+            this.getPageAccessToken().then(function (token) {
+                return _this8.setState({ "page_access_token": token });
+            }).then(function (page_access_token) {
+                return new Promise(function (resolve, reject) {
+                    return FB.api('v2.4/' + _this8.state.selected_page_id + '/feed', 'POST', {
+                        message: _this8.state.message,
+                        link: _this8.state.post_link,
+                        access_token: _this8.state.page_access_token,
+                        scope: 'publish_actions'
+                    }, function (response) {
+                        if (!response || response.error) {
+                            alert('Error occured');
+                            reject(response);
+                        } else {
+                            _this8.setState({ "message": '' });
+                            console.log('Post ID: ' + response.id);
+                            alert('Post ID: ' + response.id);
+                            resolve(response);
+                        }
+                    });
                 });
             });
         }
     }, {
         key: 'renderSelectGroupId',
         value: function renderSelectGroupId() {
-            var _this8 = this;
+            var _this9 = this;
 
             var options = this.state.pages.map(function (opt) {
                 return _react2.default.createElement(
@@ -9853,8 +9848,10 @@ var App = function (_Component) {
             return _react2.default.createElement(
                 'select',
                 { id: 'pageIdSelect', onChange: function onChange(e) {
-                        _this8.setState({ "selected_page_id": e.target.selectedOptions[0].value });
-                        _this8.getPageAccessToken();
+                        _this9.setState({ "selected_page_id": e.target.selectedOptions[0].value });
+                        _this9.getPageAccessToken().then(function (token) {
+                            return _this9.setState({ "page_access_token": token });
+                        });
                     } },
                 options
             );
@@ -9862,6 +9859,8 @@ var App = function (_Component) {
     }, {
         key: 'main',
         value: function main(loginResponse) {
+            var _this10 = this;
+
             this.setState({
                 user_id: loginResponse.id,
                 user_name: loginResponse.name,
@@ -9870,12 +9869,14 @@ var App = function (_Component) {
             this.getUserId();
             this.getUserAccessToken();
             this.getPagesWhereUserIsAdmin();
-            this.getPageAccessToken();
+            this.getPageAccessToken().then(function (token) {
+                return _this10.setState({ "page_access_token": token });
+            });
         }
     }, {
         key: 'render',
         value: function render() {
-            var _this9 = this;
+            var _this11 = this;
 
             return _react2.default.createElement(
                 'div',
@@ -9897,21 +9898,21 @@ var App = function (_Component) {
                     _react2.default.createElement(
                         'button',
                         { onClick: function onClick() {
-                                return _this9.setState({ devmode: !_this9.state.devmode });
+                                return _this11.setState({ devmode: !_this11.state.devmode });
                             }, className: 'btn btn-secondary' },
                         'Toggle devmode'
                     ),
                     this.state.user_logged_in && _react2.default.createElement(
                         'button',
                         { onClick: function onClick() {
-                                return _this9.logOut();
+                                return _this11.logOut();
                             }, type: 'button', className: 'btn btn-light' },
                         'Logout of facebook'
                     ),
                     !this.state.user_logged_in && _react2.default.createElement(
                         'button',
                         { onClick: function onClick() {
-                                return _this9.logIn();
+                                return _this11.logIn();
                             }, type: 'button', className: 'btn btn-primary' },
                         'Login to facebook'
                     )
@@ -9938,7 +9939,7 @@ var App = function (_Component) {
                                 'User ID'
                             ),
                             _react2.default.createElement('input', { type: 'text', id: 'userIdInput', value: this.state.user_id, onChange: function onChange(e) {
-                                    return _this9.setState({ user_access_token: e.target.value });
+                                    return _this11.setState({ user_access_token: e.target.value });
                                 } })
                         ),
                         this.state.devmode && _react2.default.createElement(
@@ -9950,7 +9951,7 @@ var App = function (_Component) {
                                 'User Access Token'
                             ),
                             _react2.default.createElement('input', { type: 'text', id: 'userAccessTokenInput', value: this.state.user_access_token, onChange: function onChange(e) {
-                                    return _this9.setState({ user_access_token: e.target.value });
+                                    return _this11.setState({ user_access_token: e.target.value });
                                 } })
                         ),
                         this.state.pages && _react2.default.createElement(
@@ -9962,9 +9963,21 @@ var App = function (_Component) {
                                 'Your pages:'
                             ),
                             this.state.selected_page_id && this.state.devmode && _react2.default.createElement('input', { type: 'text', id: 'pageIdInput', value: this.state.selected_page_id, onChange: function onChange(e) {
-                                    return _this9.setState({ "selected_page_id": e.target.value });
+                                    return _this11.setState({ selected_page_id: e.target.value });
                                 } }),
                             this.renderSelectGroupId()
+                        ),
+                        _react2.default.createElement(
+                            'li',
+                            null,
+                            _react2.default.createElement(
+                                'label',
+                                { htmlFor: 'postLink' },
+                                'postLink'
+                            ),
+                            _react2.default.createElement('input', { type: 'text', id: 'postLink', value: this.state.post_link, onChange: function onChange(e) {
+                                    return _this11.setState({ post_link: e.target.value });
+                                } })
                         ),
                         this.state.devmode && _react2.default.createElement(
                             'li',
@@ -9975,12 +9988,14 @@ var App = function (_Component) {
                                 'Page Access Token'
                             ),
                             _react2.default.createElement('input', { type: 'text', id: 'pageAccessTokenInput', value: this.state.page_access_token, onChange: function onChange(e) {
-                                    return _this9.setState({ page_access_token: e.target.value });
+                                    return _this11.setState({ page_access_token: e.target.value });
                                 } }),
                             _react2.default.createElement(
                                 'button',
                                 { onClick: function onClick() {
-                                        return _this9.getPageAccessToken();
+                                        return _this11.getPageAccessToken().then(function (token) {
+                                            return _this11.setState({ "page_access_token": token });
+                                        });
                                     } },
                                 'getPageAccessToken'
                             )
@@ -9994,16 +10009,16 @@ var App = function (_Component) {
                                 'Message'
                             ),
                             _react2.default.createElement('textarea', { id: 'messageInput', defaultValue: this.state.message, onChange: function onChange(e) {
-                                    return _this9.setState({ message: e.target.value });
+                                    return _this11.setState({ message: e.target.value });
                                 } })
                         )
                     ),
                     _react2.default.createElement(
                         'button',
                         { onClick: function onClick() {
-                                return _this9.postToPage(_this9.state);
+                                return _this11.postToPage();
                             }, type: 'button', className: 'btn btn-success' },
-                        'Post'
+                        'Post message'
                     )
                 ),
                 this.state.devmode && _react2.default.createElement(
@@ -10032,3 +10047,4 @@ exports.default = App;
 
 /***/ })
 /******/ ]);
+//# sourceMappingURL=bundle.js.map
