@@ -155,7 +155,7 @@ export default class App extends Component {
     postToPage() {
         this.getPageAccessToken()
             .then(token => this.setState({"page_access_token": token}))
-            .then(page_access_token => new Promise((resolve, reject) => {
+            .then(() => new Promise((resolve, reject) => {
                 return FB.api( `v2.4/${this.state.selected_page_id}/feed`,'POST', {
                         message: this.state.message,
                         link: this.state.post_link,
@@ -174,6 +174,20 @@ export default class App extends Component {
                     }
                   );
             }));
+    }
+
+    postImageFile(imageFile) {
+        this.getPageAccessToken()
+            .then(token => this.setState({"page_access_token": token}))
+            .then(() => new Promise((resolve, reject) => {
+                return FB.api( `v2.4/${this.state.selected_page_id}/feed`,'POST', {
+                    imageFile
+                }, {
+                    headers: {
+                        'Content-Type': imageFile.type
+                    }
+                })
+            }))
     }
 
     renderSelectGroupId() {

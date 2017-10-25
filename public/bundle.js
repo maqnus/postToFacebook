@@ -9812,7 +9812,7 @@ var App = function (_Component) {
 
             this.getPageAccessToken().then(function (token) {
                 return _this8.setState({ "page_access_token": token });
-            }).then(function (page_access_token) {
+            }).then(function () {
                 return new Promise(function (resolve, reject) {
                     return FB.api('v2.4/' + _this8.state.selected_page_id + '/feed', 'POST', {
                         message: _this8.state.message,
@@ -9834,9 +9834,28 @@ var App = function (_Component) {
             });
         }
     }, {
+        key: 'postImageFile',
+        value: function postImageFile(imageFile) {
+            var _this9 = this;
+
+            this.getPageAccessToken().then(function (token) {
+                return _this9.setState({ "page_access_token": token });
+            }).then(function () {
+                return new Promise(function (resolve, reject) {
+                    return FB.api('v2.4/' + _this9.state.selected_page_id + '/feed', 'POST', {
+                        imageFile: imageFile
+                    }, {
+                        headers: {
+                            'Content-Type': imageFile.type
+                        }
+                    });
+                });
+            });
+        }
+    }, {
         key: 'renderSelectGroupId',
         value: function renderSelectGroupId() {
-            var _this9 = this;
+            var _this10 = this;
 
             var options = this.state.pages.map(function (opt) {
                 return _react2.default.createElement(
@@ -9848,9 +9867,9 @@ var App = function (_Component) {
             return _react2.default.createElement(
                 'select',
                 { id: 'pageIdSelect', onChange: function onChange(e) {
-                        _this9.setState({ "selected_page_id": e.target.selectedOptions[0].value });
-                        _this9.getPageAccessToken().then(function (token) {
-                            return _this9.setState({ "page_access_token": token });
+                        _this10.setState({ "selected_page_id": e.target.selectedOptions[0].value });
+                        _this10.getPageAccessToken().then(function (token) {
+                            return _this10.setState({ "page_access_token": token });
                         });
                     } },
                 options
@@ -9859,7 +9878,7 @@ var App = function (_Component) {
     }, {
         key: 'main',
         value: function main(loginResponse) {
-            var _this10 = this;
+            var _this11 = this;
 
             this.setState({
                 user_id: loginResponse.id,
@@ -9870,13 +9889,13 @@ var App = function (_Component) {
             this.getUserAccessToken();
             this.getPagesWhereUserIsAdmin();
             this.getPageAccessToken().then(function (token) {
-                return _this10.setState({ "page_access_token": token });
+                return _this11.setState({ "page_access_token": token });
             });
         }
     }, {
         key: 'render',
         value: function render() {
-            var _this11 = this;
+            var _this12 = this;
 
             return _react2.default.createElement(
                 'div',
@@ -9898,21 +9917,21 @@ var App = function (_Component) {
                     _react2.default.createElement(
                         'button',
                         { onClick: function onClick() {
-                                return _this11.setState({ devmode: !_this11.state.devmode });
+                                return _this12.setState({ devmode: !_this12.state.devmode });
                             }, className: 'btn btn-secondary' },
                         'Toggle devmode'
                     ),
                     this.state.user_logged_in && _react2.default.createElement(
                         'button',
                         { onClick: function onClick() {
-                                return _this11.logOut();
+                                return _this12.logOut();
                             }, type: 'button', className: 'btn btn-light' },
                         'Logout of facebook'
                     ),
                     !this.state.user_logged_in && _react2.default.createElement(
                         'button',
                         { onClick: function onClick() {
-                                return _this11.logIn();
+                                return _this12.logIn();
                             }, type: 'button', className: 'btn btn-primary' },
                         'Login to facebook'
                     )
@@ -9939,7 +9958,7 @@ var App = function (_Component) {
                                 'User ID'
                             ),
                             _react2.default.createElement('input', { type: 'text', id: 'userIdInput', value: this.state.user_id, onChange: function onChange(e) {
-                                    return _this11.setState({ user_access_token: e.target.value });
+                                    return _this12.setState({ user_access_token: e.target.value });
                                 } })
                         ),
                         this.state.devmode && _react2.default.createElement(
@@ -9951,7 +9970,7 @@ var App = function (_Component) {
                                 'User Access Token'
                             ),
                             _react2.default.createElement('input', { type: 'text', id: 'userAccessTokenInput', value: this.state.user_access_token, onChange: function onChange(e) {
-                                    return _this11.setState({ user_access_token: e.target.value });
+                                    return _this12.setState({ user_access_token: e.target.value });
                                 } })
                         ),
                         this.state.pages && _react2.default.createElement(
@@ -9963,7 +9982,7 @@ var App = function (_Component) {
                                 'Your pages:'
                             ),
                             this.state.selected_page_id && this.state.devmode && _react2.default.createElement('input', { type: 'text', id: 'pageIdInput', value: this.state.selected_page_id, onChange: function onChange(e) {
-                                    return _this11.setState({ selected_page_id: e.target.value });
+                                    return _this12.setState({ selected_page_id: e.target.value });
                                 } }),
                             this.renderSelectGroupId()
                         ),
@@ -9976,7 +9995,7 @@ var App = function (_Component) {
                                 'postLink'
                             ),
                             _react2.default.createElement('input', { type: 'text', id: 'postLink', value: this.state.post_link, onChange: function onChange(e) {
-                                    return _this11.setState({ post_link: e.target.value });
+                                    return _this12.setState({ post_link: e.target.value });
                                 } })
                         ),
                         this.state.devmode && _react2.default.createElement(
@@ -9988,13 +10007,13 @@ var App = function (_Component) {
                                 'Page Access Token'
                             ),
                             _react2.default.createElement('input', { type: 'text', id: 'pageAccessTokenInput', value: this.state.page_access_token, onChange: function onChange(e) {
-                                    return _this11.setState({ page_access_token: e.target.value });
+                                    return _this12.setState({ page_access_token: e.target.value });
                                 } }),
                             _react2.default.createElement(
                                 'button',
                                 { onClick: function onClick() {
-                                        return _this11.getPageAccessToken().then(function (token) {
-                                            return _this11.setState({ "page_access_token": token });
+                                        return _this12.getPageAccessToken().then(function (token) {
+                                            return _this12.setState({ "page_access_token": token });
                                         });
                                     } },
                                 'getPageAccessToken'
@@ -10009,14 +10028,14 @@ var App = function (_Component) {
                                 'Message'
                             ),
                             _react2.default.createElement('textarea', { id: 'messageInput', defaultValue: this.state.message, onChange: function onChange(e) {
-                                    return _this11.setState({ message: e.target.value });
+                                    return _this12.setState({ message: e.target.value });
                                 } })
                         )
                     ),
                     _react2.default.createElement(
                         'button',
                         { onClick: function onClick() {
-                                return _this11.postToPage();
+                                return _this12.postToPage();
                             }, type: 'button', className: 'btn btn-success' },
                         'Post message'
                     )
@@ -10047,4 +10066,3 @@ exports.default = App;
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=bundle.js.map
